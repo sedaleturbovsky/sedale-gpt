@@ -5,6 +5,7 @@ description = "A2A-protocol agent — Sedale GPT, capital formation advisory for
 requires-python = ">=3.11"
 dependencies = [
   "a2a-sdk>=1.0.3",
+  "sse-starlette>=2.0.0",  # transitive of a2a-sdk's JSON-RPC dispatcher; not pulled automatically
   "anthropic>=0.40.0",
   "exa-py>=1.0.9",
   "composio>=0.5.0",
