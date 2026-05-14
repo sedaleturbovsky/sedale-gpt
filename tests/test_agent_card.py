@@ -10,7 +10,7 @@ def test_public_card_basic_shape():
     cards = build_card_set(public_url="https://sedale-gpt.fly.dev")
     public = cards.public
     assert public.name == "Sedale GPT"
-    assert "1.0.0" == public.version
+    assert "1.1.0" == public.version
     assert "text/plain" in public.default_input_modes
     assert "application/json" in public.default_input_modes
     assert "text/markdown" in public.default_output_modes

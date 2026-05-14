@@ -1,0 +1,32 @@
+{
+  "_schema_version": "1.0.0",
+  "_doc": "Allowlisted peer A2A agents. To add a peer: append an object to `peers` and redeploy. Secrets are env vars referenced by `auth.secret_env`; never commit secret values here.",
+  "peers": [
+    {
+      "id": "cic-project-agent",
+      "name": "Project Information Agent",
+      "operator": "Rachel Halfaker",
+      "card_url": "https://cic-project-agent.fly.dev/.well-known/agent-card.json",
+      "rpc_url": "https://cic-project-agent.fly.dev/",
+      "protocol_version": "0.2.5",
+      "trust_level": "allowlisted",
+      "skill_summary": "Free-form Q&A about projects in Rachel Halfaker's portfolio (CIC pipeline, community infrastructure initiatives).",
+      "good_for": [
+        "Named-entity grounding — which projects in a real portfolio match a profile",
+        "Comparable-precedent lookup — what funding paths similar projects took",
+        "Coordination — which initiatives are looking for the same capital you are"
+      ],
+      "do_not_ask": [
+        "Public-web facts EXA can answer faster (e.g., IRS guidance, DOE program rules)",
+        "Hypothetical or generic strategy questions — this peer knows specifics, not theory"
+      ],
+      "auth": {
+        "type": "api_key",
+        "header": "X-API-Key",
+        "secret_env": "PEER_API_KEY_CIC_PROJECT_AGENT"
+      },
+      "streaming": false,
+      "timeout_seconds": 60
+    }
+  ]
+}

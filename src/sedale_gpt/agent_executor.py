@@ -36,6 +36,7 @@ from a2a.types.a2a_pb2 import (
 
 from .guards import ConcurrencyGate, DailyCeiling
 from .logging import get_logger
+from .tools import peer_agents as peer_tools
 from .tools.registry import RouteVariant, ToolRegistry
 
 
@@ -258,24 +259,34 @@ class SedaleGPTExecutor(AgentExecutor):
 
         A2A Message.parts may be text, JSON data, or files. For now we
         accept text and JSON; files would need a separate ingestion path.
+
+        Prepends an "Available peers" summary so the model knows which
+        peer agents it can consult on this task.
         """
         parts = getattr(message, "parts", None) or []
         text_chunks: list[str] = []
+
+        peer_summary = peer_tools.peer_summary_text()
+        if peer_summary:
+            text_chunks.append(peer_summary)
+
+        brief_chunks: list[str] = []
         for part in parts:
             kind = _type_of(part)
             if kind in ("text", "TextPart"):
-                text_chunks.append(_field(part, "text") or "")
+                brief_chunks.append(_field(part, "text") or "")
             elif kind in ("data", "DataPart"):
                 data = _field(part, "data") or {}
-                text_chunks.append("Structured project brief (JSON):\n```json\n"
-                                   + json.dumps(data, indent=2, default=str)
-                                   + "\n```")
+                brief_chunks.append("Structured project brief (JSON):\n```json\n"
+                                    + json.dumps(data, indent=2, default=str)
+                                    + "\n```")
             else:
-                # Unknown part — best-effort string coercion
-                text_chunks.append(str(part))
+                brief_chunks.append(str(part))
 
-        if not text_chunks:
-            text_chunks = ["(no project brief provided)"]
+        if brief_chunks:
+            text_chunks.append("## Project brief\n\n" + "\n\n".join(brief_chunks))
+        else:
+            text_chunks.append("## Project brief\n\n(no project brief provided)")
 
         return [{"role": "user", "content": "\n\n".join(text_chunks)}]
 

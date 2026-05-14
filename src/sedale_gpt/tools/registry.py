@@ -15,6 +15,7 @@ import httpx
 from ..logging import get_logger
 from . import composio as composio_tools
 from . import exa as exa_tools
+from . import peer_agents as peer_tools
 from . import web as web_tools
 
 
@@ -30,6 +31,7 @@ OPEN_TOOLS = {
     "exa_search": exa_tools.search,
     "exa_get_contents": exa_tools.get_contents,
     "web_fetch": web_tools.fetch,
+    "consult_agent": peer_tools.consult,
 }
 
 PRIVILEGED_ONLY_TOOLS = {
@@ -38,7 +40,7 @@ PRIVILEGED_ONLY_TOOLS = {
     "create_attio_deal": composio_tools.create_attio_deal,
 }
 
-OPEN_SPECS = [*exa_tools.SPECS, *web_tools.SPECS]
+OPEN_SPECS = [*exa_tools.SPECS, *web_tools.SPECS, *peer_tools.SPECS]
 PRIVILEGED_SPECS = [*OPEN_SPECS, *composio_tools.SPECS]
 
 
@@ -89,7 +91,7 @@ class ToolRegistry:
                 payload = {"error": f"tool '{name}' is not available on this route."}
                 log.warning("tool_blocked", extra={"task_id": task_id, "tool": name, "variant": variant.value})
             else:
-                payload = await self._dispatch(name, args)
+                payload = await self._dispatch(name, args, task_id=task_id)
 
             results.append({
                 "type": "tool_result",
@@ -98,7 +100,7 @@ class ToolRegistry:
             })
         return results
 
-    async def _dispatch(self, name: str, args: dict[str, Any]) -> Any:
+    async def _dispatch(self, name: str, args: dict[str, Any], *, task_id: str | None = None) -> Any:
         fn = OPEN_TOOLS.get(name) or PRIVILEGED_ONLY_TOOLS.get(name)
         if fn is None:
             return {"error": f"unknown tool '{name}'"}
@@ -106,6 +108,9 @@ class ToolRegistry:
             if name in {"exa_search", "exa_get_contents", "web_fetch"}:
                 client = await self._http()
                 return await fn(client=client, **args)
+            if name == "consult_agent":
+                client = await self._http()
+                return await fn(client=client, task_id=task_id, **args)
             return await fn(**args)
         except TypeError as exc:
             return {"error": f"bad arguments for {name}: {exc!s}"}

@@ -70,7 +70,10 @@ _PUBLIC_DESC = (
     "formation for infrastructure-scale projects ($50M–$5B+). "
     "Not the real Sedale. Advisory only — no commitments, no "
     "investment advice. Capital stacks involving securities "
-    "require qualified securities counsel."
+    "require qualified securities counsel. May consult an "
+    "allowlist of peer A2A agents for named-entity and "
+    "judgment-call lookups; surfaces open questions inside the "
+    "memo when project anchors are missing."
 )
 
 _PRIVILEGED_DESC = (
@@ -87,7 +90,7 @@ def _build_card(*, name: str, description: str, public_url: str, route_path: str
     return AgentCard(
         name=name,
         description=description,
-        version="1.0.0",
+        version="1.1.0",
         default_input_modes=["text/plain", "application/json"],
         default_output_modes=["text/markdown", "application/json"],
         capabilities=AgentCapabilities(
