@@ -44,7 +44,10 @@ log = get_logger("sedale_gpt.executor")
 
 MODEL = "claude-opus-4-7"
 MAX_OUTPUT_TOKENS = 16_000
-THINKING_BUDGET_TOKENS = 10_000
+# Opus 4.7 uses adaptive thinking + an effort knob — the older
+# {"type": "enabled", "budget_tokens": N} shape returns 400.
+THINKING = {"type": "adaptive"}
+OUTPUT_EFFORT = "high"  # "minimal" | "low" | "medium" | "high"
 MAX_TOOL_ITERATIONS = 12
 
 
@@ -134,7 +137,8 @@ class SedaleGPTExecutor(AgentExecutor):
                     resp = await self.anthropic.messages.create(
                         model=MODEL,
                         max_tokens=MAX_OUTPUT_TOKENS,
-                        thinking={"type": "enabled", "budget_tokens": THINKING_BUDGET_TOKENS},
+                        thinking=THINKING,
+                        output_config={"effort": OUTPUT_EFFORT},
                         system=SYSTEM_PROMPT,
                         tools=tool_specs,
                         messages=messages,
