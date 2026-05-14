@@ -50,26 +50,38 @@ pytest
 
 Tests are hermetic — no network, no Anthropic, no Composio.
 
-## Deploy to Fly.io
+## Deploy via Fly Launch (web UI)
 
-```sh
-fly launch --no-deploy --copy-config --name opengrants-sedale-gpt --region iad
-
-fly secrets set \
-  ANTHROPIC_API_KEY=sk-ant-... \
-  EXA_API_KEY=... \
-  PUBLIC_URL=https://opengrants-sedale-gpt.fly.dev
-
-# Optional — only if you want the privileged route live
-fly secrets set \
-  COMPOSIO_API_KEY=... \
-  COMPOSIO_USER_ID=sedale@opengrants.io \
-  SEDALE_GPT_PRIVILEGED_TOKEN="$(openssl rand -hex 32)"
-
-fly deploy
-```
+1. Open <https://fly.io/launch> in your browser (sign in if needed).
+2. Paste the repo URL: `https://github.com/sedaleturbovsky/sedale-gpt`
+3. Fly scans the repo, detects `fly.toml` + `Dockerfile`, and pre-fills:
+   - App name: `opengrants-sedale-gpt`
+   - Region: `iad`
+   - Internal port: `8080`
+4. When prompted, set these secrets in the UI:
+   - `ANTHROPIC_API_KEY`
+   - `EXA_API_KEY`
+   - `PUBLIC_URL` = `https://opengrants-sedale-gpt.fly.dev`
+   - *(optional, only for the privileged route)* `COMPOSIO_API_KEY`, `COMPOSIO_USER_ID`, `SEDALE_GPT_PRIVILEGED_TOKEN`
+5. Click **Deploy**. Fly builds the image with its remote builder and rolls out one Machine in `iad`.
 
 Single shared-CPU machine in `iad` with `auto_stop_machines = "suspend"`. Healthcheck hits the cheap AgentCard route (no LLM call).
+
+### Shipping code changes after the first deploy
+
+Fly's web UI does not auto-pull new commits. To ship a code change, pick one:
+
+- **Re-run Fly Launch** — open <https://fly.io/launch> with the same repo URL. Fly recognizes the existing app and ships a new release.
+- **CLI fallback** — `fly auth login` (once), then from `agents/sedale-gpt/` run `fly deploy`.
+- **No-rebuild redeploy** — Fly dashboard → app → Releases → "Redeploy" replays the existing image (useful for a restart, not for code changes).
+
+If you later want auto-deploy on push, restore the deploy workflow:
+
+```sh
+git revert <commit-that-removed-fly-deploy.yml>
+gh secret set FLY_API_TOKEN -R sedaleturbovsky/sedale-gpt   # paste a `fly tokens create deploy` value
+git push
+```
 
 ## Calling it from another agent
 
