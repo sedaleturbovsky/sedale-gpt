@@ -67,6 +67,22 @@ def _agent_card_handler(card):
 
 
 def _dump(card) -> dict:
+    """Serialize an AgentCard to a JSON-ready dict.
+
+    a2a-sdk's AgentCard is a protobuf-backed Message (from a2a.types.a2a_pb2),
+    not a Pydantic model — so MessageToDict is the right path. We keep a
+    Pydantic fallback in case a future SDK release switches representations.
+    """
+    try:
+        from google.protobuf.message import Message as _PbMessage
+        from google.protobuf.json_format import MessageToDict
+
+        if isinstance(card, _PbMessage):
+            # A2A spec emits camelCase JSON; that's MessageToDict's default.
+            return MessageToDict(card, preserving_proto_field_name=False)
+    except ImportError:
+        pass
+
     for attr in ("model_dump", "dict"):
         fn = getattr(card, attr, None)
         if callable(fn):
@@ -74,7 +90,6 @@ def _dump(card) -> dict:
                 return fn(by_alias=True, exclude_none=True)
             except TypeError:
                 return fn()
-    # Last-resort: JSON-round-trip via Pydantic's .json/.model_dump_json
     for attr in ("model_dump_json", "json"):
         fn = getattr(card, attr, None)
         if callable(fn):
