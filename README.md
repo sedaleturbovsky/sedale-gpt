@@ -55,13 +55,13 @@ Tests are hermetic — no network, no Anthropic, no Composio.
 1. Open <https://fly.io/launch> in your browser (sign in if needed).
 2. Paste the repo URL: `https://github.com/sedaleturbovsky/sedale-gpt`
 3. Fly scans the repo, detects `fly.toml` + `Dockerfile`, and pre-fills:
-   - App name: `opengrants-sedale-gpt`
+   - App name: `sedale-gpt`
    - Region: `iad`
    - Internal port: `8080`
 4. When prompted, set these secrets in the UI:
    - `ANTHROPIC_API_KEY`
    - `EXA_API_KEY`
-   - `PUBLIC_URL` = `https://opengrants-sedale-gpt.fly.dev`
+   - `PUBLIC_URL` = `https://sedale-gpt.fly.dev`
    - *(optional, only for the privileged route)* `COMPOSIO_API_KEY`, `COMPOSIO_USER_ID`, `SEDALE_GPT_PRIVILEGED_TOKEN`
 5. Click **Deploy**. Fly builds the image with its remote builder and rolls out one Machine in `iad`.
 
@@ -89,7 +89,7 @@ git push
 from a2a.client import A2AClient
 from a2a.types import Message, TextPart
 
-client = A2AClient("https://opengrants-sedale-gpt.fly.dev/a2a")
+client = A2AClient("https://sedale-gpt.fly.dev/a2a")
 
 async for event in client.send_message_stream(
     Message(parts=[TextPart(text=(

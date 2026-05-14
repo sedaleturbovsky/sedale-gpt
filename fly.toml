@@ -10,7 +10,7 @@ primary_region = 'iad'
 
 [env]
   PORT = '8080'
-  PUBLIC_URL = 'https://opengrants-sedale-gpt.fly.dev'
+  PUBLIC_URL = 'https://sedale-gpt.fly.dev'
 
 [http_service]
   internal_port = 8080

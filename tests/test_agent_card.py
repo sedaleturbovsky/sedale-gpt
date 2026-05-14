@@ -7,7 +7,7 @@ from sedale_gpt.agent_card import build_card_set
 
 
 def test_public_card_basic_shape():
-    cards = build_card_set(public_url="https://opengrants-sedale-gpt.fly.dev")
+    cards = build_card_set(public_url="https://sedale-gpt.fly.dev")
     public = cards.public
     assert public.name == "Sedale GPT"
     assert "1.0.0" == public.version
@@ -23,12 +23,12 @@ def test_public_card_basic_shape():
 
 
 def test_privileged_card_differs():
-    cards = build_card_set(public_url="https://opengrants-sedale-gpt.fly.dev")
+    cards = build_card_set(public_url="https://sedale-gpt.fly.dev")
     assert cards.privileged.name == "Sedale GPT (privileged)"
     public_url = cards.public.supported_interfaces[0].url
     priv_url = cards.privileged.supported_interfaces[0].url
-    assert public_url == "https://opengrants-sedale-gpt.fly.dev/a2a"
-    assert priv_url == "https://opengrants-sedale-gpt.fly.dev/a2a/privileged"
+    assert public_url == "https://sedale-gpt.fly.dev/a2a"
+    assert priv_url == "https://sedale-gpt.fly.dev/a2a/privileged"
     assert "Bearer" in cards.privileged.description
 
 
