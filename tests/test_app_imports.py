@@ -32,6 +32,30 @@ def test_build_app_constructs_without_anthropic_key(monkeypatch) -> None:
     assert app is not None
 
 
+def test_sdk_helper_signatures_we_depend_on() -> None:
+    """Canary: a2a-sdk helper signatures the executor calls.
+
+    A live A2A probe surfaced a TypeError because new_data_artifact's
+    current signature is (name, data, media_type, description, artifact_id)
+    — no metadata= kwarg. If the SDK shifts these, the executor's last
+    two artifact-emit calls break only at the end of a successful LLM run,
+    which is the most expensive place to discover a bug. Call them here
+    with the exact kwargs the executor uses; success = canary green.
+    """
+    from a2a.helpers import new_data_artifact, new_text_artifact
+
+    memo = new_text_artifact(name="capital_stack_memo", text="hello")
+    assert memo is not None
+
+    stack = new_data_artifact(
+        name="capital_stack_structured",
+        data={"schema_version": "1.0.0", "tranches": []},
+        media_type="application/json",
+        description="ok",
+    )
+    assert stack is not None
+
+
 def test_agent_card_serializes_to_json() -> None:
     """AgentCard is a protobuf Message; _dump must produce a JSON-ready dict.
 

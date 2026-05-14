@@ -201,7 +201,8 @@ class SedaleGPTExecutor(AgentExecutor):
                     artifact=new_data_artifact(
                         name="capital_stack_structured",
                         data=stack_json,
-                        metadata={"schema_version": "1.0.0"},
+                        media_type="application/json",
+                        description="Structured capital stack v1.0.0 (schema_version inside the data payload).",
                     ),
                 ))
 
