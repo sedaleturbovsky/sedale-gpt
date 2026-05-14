@@ -65,16 +65,28 @@ class CardSet:
     privileged: AgentCard
 
 
-def _base_card(public_url: str) -> AgentCard:
+_PUBLIC_DESC = (
+    "AI agent trained on Sedale Turbovsky's approach to capital "
+    "formation for infrastructure-scale projects ($50M–$5B+). "
+    "Not the real Sedale. Advisory only — no commitments, no "
+    "investment advice. Capital stacks involving securities "
+    "require qualified securities counsel."
+)
+
+_PRIVILEGED_DESC = (
+    _PUBLIC_DESC
+    + " Privileged endpoint additionally exposes Composio side-effects "
+    "(Gmail drafts, Attio notes/deals) into Sedale's environment. "
+    "Requires Authorization: Bearer <SEDALE_GPT_PRIVILEGED_TOKEN>."
+)
+
+
+def _build_card(*, name: str, description: str, public_url: str, route_path: str) -> AgentCard:
+    # AgentCard is a protobuf-backed type; repeated fields cannot be reassigned
+    # after construction, so we pass everything in here.
     return AgentCard(
-        name="Sedale GPT",
-        description=(
-            "AI agent trained on Sedale Turbovsky's approach to capital "
-            "formation for infrastructure-scale projects ($50M–$5B+). "
-            "Not the real Sedale. Advisory only — no commitments, no "
-            "investment advice. Capital stacks involving securities "
-            "require qualified securities counsel."
-        ),
+        name=name,
+        description=description,
         version="1.0.0",
         default_input_modes=["text/plain", "application/json"],
         default_output_modes=["text/markdown", "application/json"],
@@ -84,7 +96,7 @@ def _base_card(public_url: str) -> AgentCard:
             extended_agent_card=False,
         ),
         supported_interfaces=[
-            AgentInterface(protocol_binding="JSONRPC", url=f"{public_url}/a2a"),
+            AgentInterface(protocol_binding="JSONRPC", url=f"{public_url}{route_path}"),
         ],
         skills=[CAPITAL_FORMATION_SKILL],
     )
@@ -93,18 +105,16 @@ def _base_card(public_url: str) -> AgentCard:
 def build_card_set(public_url: str | None = None) -> CardSet:
     public_url = (public_url or os.environ.get("PUBLIC_URL") or "http://127.0.0.1:8080").rstrip("/")
 
-    public = _base_card(public_url)
-
-    privileged = _base_card(public_url)
-    privileged.name = "Sedale GPT (privileged)"
-    privileged.description = (
-        privileged.description
-        + " Privileged endpoint additionally exposes Composio side-effects "
-        "(Gmail drafts, Attio notes/deals) into Sedale's environment. "
-        "Requires Authorization: Bearer <SEDALE_GPT_PRIVILEGED_TOKEN>."
+    public = _build_card(
+        name="Sedale GPT",
+        description=_PUBLIC_DESC,
+        public_url=public_url,
+        route_path="/a2a",
     )
-    privileged.supported_interfaces = [
-        AgentInterface(protocol_binding="JSONRPC", url=f"{public_url}/a2a/privileged"),
-    ]
-
+    privileged = _build_card(
+        name="Sedale GPT (privileged)",
+        description=_PRIVILEGED_DESC,
+        public_url=public_url,
+        route_path="/a2a/privileged",
+    )
     return CardSet(public=public, privileged=privileged)
