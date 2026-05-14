@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+*.egg
+.eggs/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Virtual envs
+.venv/
+venv/
+env/
+ENV/
+
+# Env files (commit only the example)
+.env
+.env.*
+!.env.example
+
+# IDEs / editors
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Fly
+fly.toml.bak
+.fly/
+
+# Logs
+*.log
