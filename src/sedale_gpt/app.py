@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import json
 import os
+from contextlib import asynccontextmanager
 
 from anthropic import AsyncAnthropic
 from a2a.server.request_handlers import DefaultRequestHandler
@@ -150,19 +151,17 @@ def build_app() -> Starlette:
         *create_agent_card_routes(cards.public),
     ]
 
-    async def _on_startup() -> None:
+    @asynccontextmanager
+    async def lifespan(_app: Starlette):
         log.info("sedale_gpt_started", extra={
             "public_url": public_url,
             "ceiling": ceiling.snapshot(),
             "max_concurrent_tasks": gate.limit,
         })
+        try:
+            yield
+        finally:
+            await tool_registry.aclose()
 
-    async def _on_shutdown() -> None:
-        await tool_registry.aclose()
-
-    app = Starlette(
-        routes=routes,
-        on_startup=[_on_startup],
-        on_shutdown=[_on_shutdown],
-    )
+    app = Starlette(routes=routes, lifespan=lifespan)
     return app
